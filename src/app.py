@@ -15,6 +15,9 @@ CORS(app)
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
 
+
+
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -30,13 +33,44 @@ def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
+    response_body = jsonify(members)
+    return response_body, 200
+
+@app.route('/member/<int:id>', methods=['GET'])
+def get_member(id):
+
+    # this is how you can use the Family datastructure by calling its methods
+    member = jackson_family.get_member(id)
+    if member is None: 
+        return jsonify({"error": "member not found"}), 404
+    
     response_body = {
-        "hello": "world",
-        "family": members
+        "id": member["id"],
+        "first_name": member["first_name"],
+        "age": member["age"],
+        "lucky_numbers": member["lucky_numbers"]
     }
-
-
     return jsonify(response_body), 200
+
+@app.route('/member', methods=['POST'])
+def add_member():
+    request_body = request.json
+    if not request_body : 
+        return jsonify({"msg": "bad request"}), 400
+    # this is how you can use the Family datastructure by calling its methods
+    members = jackson_family.add_member(request_body)
+    return (members), 200
+
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_member(id):
+
+    # this is how you can use the Family datastructure by calling its methods
+    delete_member = jackson_family.delete_member(id)
+    # if delete_member is None: 
+    #     return jsonify({"error": "member not found"}), 404
+    return jsonify(delete_member), 200
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
